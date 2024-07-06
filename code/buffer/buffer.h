@@ -1,5 +1,5 @@
-#ifndef __BUFFER_H
-#define __BUFFER_H
+#ifndef BUFFER_H
+#define BUFFER_H
 #include<iostream>
 #include<assert.h>
 #include<atomic>
@@ -43,7 +43,7 @@ public:
 
 private:
     char* BeginPtr_();  // buffer开头，返回指向缓冲区开头的指针。它用于获取缓冲区的起始位置
-    const char* BeginPtr_() const;
+    const char* BeginPtr_() const;// 后面的const表示为const成员函数
     void MakeSpace_(size_t len); //用于在缓冲区中创建足够的空间以容纳指定长度的数据
 
     vector<char> buffer_;  // 用于存储实际的数据
