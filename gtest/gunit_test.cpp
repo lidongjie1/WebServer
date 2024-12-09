@@ -7,6 +7,25 @@
 
 using namespace std;
 
+
+class MyTestFixture : public ::testing::Test {
+protected:
+    void SetUp() override { /* 初始化操作 */ }
+    void TearDown() override { /* 清理操作 */ }
+
+    int shared_data;
+};
+
+TEST_F(MyTestFixture, Test1) {
+    shared_data = 10;
+    EXPECT_EQ(shared_data, 10);
+}
+
+TEST_F(MyTestFixture, Test2) {
+    shared_data = 20;
+    EXPECT_EQ(shared_data, 20);
+}
+
 void test()
 {
     std::cout << "hello gtest" << std::endl;
