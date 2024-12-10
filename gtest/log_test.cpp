@@ -46,12 +46,23 @@ TEST(LogTest, WriteSyncLog) {
 TEST(LogTest, WriteAsyncLog) {
     Log::getInstance()->init("/home/adminer/Projects/TinyWebserver/test_file/async_test.log", 0, 1024, 100, 10); // 启用异步模式
     LOG_INFO("Test async log message.");
-    Log::getInstance()->flush(); // 强制刷新队列和文件流
+    LOG_ERROR("Test ERROR.");
+    LOG_DEBUG("Test DEBUG.");
+    LOG_WARN("Test WARN.");
 
-    // 检查日志内容
-    ASSERT_TRUE(file_contains("/home/adminer/Projects/TinyWebserver/test_file/async_test.log", "Test async log message."))
-                                << "Log file does not contain the expected async log message.";
+    // 强制刷新日志队列
+    Log::getInstance()->flush();
+
+    // 等待异步线程完成
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+    // 检查日志文件内容
+    ASSERT_TRUE(file_contains("/home/adminer/Projects/TinyWebserver/test_file/async_test.log", "Test async log message."));
+    ASSERT_TRUE(file_contains("/home/adminer/Projects/TinyWebserver/test_file/async_test.log", "Test ERROR."));
+    ASSERT_TRUE(file_contains("/home/adminer/Projects/TinyWebserver/test_file/async_test.log", "Test DEBUG."));
+    ASSERT_TRUE(file_contains("/home/adminer/Projects/TinyWebserver/test_file/async_test.log", "Test WARN."));
 }
+
 
 // 测试日志文件分割功能
 TEST(LogTest, FileSplitLog) {
@@ -67,7 +78,7 @@ TEST(LogTest, FileSplitLog) {
     // 检查是否生成了新文件
     std::ifstream old_file("/home/adminer/Projects/TinyWebserver/test_file/split_test.log");
     ASSERT_TRUE(old_file.is_open()) << "Old log file not found.";
-    ASSERT_TRUE(file_contains("/home/adminer/Projects/TinyWebserver/test_file/split_test.log", "Test log message 3."))
+    ASSERT_TRUE(file_contains("/home/adminer/Projects/TinyWebserver/test_file/2024_12_10_split_test.log", "Test log message 3."))
                                 << "New log file does not contain the expected log message.";
 }
 

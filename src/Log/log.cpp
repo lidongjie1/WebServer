@@ -11,13 +11,22 @@
 Log::Log() : m_count(0), m_today(0), m_is_async(false), m_stop(false), m_log_queue(nullptr) {}
 
 Log::~Log() {
-    //异步线程关闭
-    if(m_async_thread.joinable()){
+    // 停止异步线程
+    if (m_async_thread.joinable()) {
         m_stop = true;
-        m_cond_var.notify_all();
+        m_cond_var.notify_all();  // 通知异步线程退出
         m_async_thread.join();
     }
-    //关闭日志前关闭文件流
+
+    // 确保剩余日志写入
+    if (m_log_queue && !m_log_queue->empty()) {
+        std::string log_entry;
+        while (m_log_queue->pop(log_entry)) {
+            m_file_stream << log_entry;
+        }
+    }
+
+    // 关闭文件流
     if (m_file_stream.is_open()) {
         m_file_stream.close();
     }
@@ -136,17 +145,38 @@ void Log::check_and_split_file()
 }
 
 void Log::async_write_log() {
-    //停止标志
-    while (!m_stop) {
-        std::string log_entry;
-        if (m_log_queue->pop(log_entry)) {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            m_file_stream << log_entry;
+    while (!m_stop || !m_log_queue->empty()) {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        /*
+            当 [this]() { return m_stop || !m_log_queue->empty(); } 返回 false 时：
+            调用 m_cond_var.notify_all() 后，等待的线程会被唤醒。
+            被唤醒的线程会重新检查条件。
+            如果条件仍然为 false，线程会重新进入等待状态。
+            唤醒线程后，程序不会继续往下走，直到条件返回 true。
+         */
+        m_cond_var.wait(lock, [this]() { return m_stop || !m_log_queue->empty(); });
+
+        // 处理队列中的日志
+        while (!m_log_queue->empty()) {
+            std::string log_entry;
+            if (m_log_queue->pop(log_entry)) {
+                m_file_stream << log_entry;
+            }
         }
     }
 }
 
 void Log::flush() {
     std::unique_lock<std::mutex> lock(m_mutex);
+    // 通知异步线程处理日志
+    m_cond_var.notify_all();
+    // 等待队列为空（异步线程消费完）
+    while (m_is_async && m_log_queue && !m_log_queue->empty()) {
+        lock.unlock();
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));  // 避免长时间占用锁
+        lock.lock();
+    }
+    // 刷新文件流
     m_file_stream.flush();
 }
+
