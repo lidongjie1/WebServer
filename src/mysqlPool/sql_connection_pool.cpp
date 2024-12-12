@@ -59,6 +59,7 @@ ConnectionPool *ConnectionPool::getInstance() {
 //获取数据库连接
 MYSQL *ConnectionPool::getConnection() {
     std::unique_lock<std::mutex> lock(m_mutex);
+    //TODO 检查这里的逻辑是否有点问题
     while (m_connList.empty())
     {
         m_cond.wait(lock);

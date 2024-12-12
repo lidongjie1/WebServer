@@ -155,7 +155,14 @@ void Log::async_write_log() {
             唤醒线程后，程序不会继续往下走，直到条件返回 true。
          */
         m_cond_var.wait(lock, [this]() { return m_stop || !m_log_queue->empty(); });
-
+        /*
+         当线程调用 m_cond_var.wait(lock, ...)：
+        wait 会先释放 m_mutex，然后将当前线程放入等待队列中，进入休眠状态。
+        其他线程（比如调用 write_log 的主线程）可以获取 m_mutex。
+        当条件变量被唤醒（通过 notify_all 或 notify_one），等待线程会尝试重新获取 m_mutex。
+        如果成功获取锁，线程会继续执行。
+        如果失败（锁被其他线程持有），线程会继续等待锁的释放。
+         */
         // 处理队列中的日志
         while (!m_log_queue->empty()) {
             std::string log_entry;
