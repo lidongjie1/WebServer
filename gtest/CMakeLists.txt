@@ -11,6 +11,7 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/googletest-1.15.2 googletest) # 添加 Goog
 include_directories(${CMAKE_SOURCE_DIR}/include)
 add_library(LogLib STATIC ${CMAKE_SOURCE_DIR}/src/Log/log.cpp)
 add_library(SqlLib STATIC ${CMAKE_SOURCE_DIR}/src/mysqlPool/sql_connection_pool.cpp)
+add_library(BuflLib STATIC ${CMAKE_SOURCE_DIR}/src/buffer/buffer.cpp)
 # SqlLib 依赖 LogLib
 target_link_libraries(SqlLib PUBLIC LogLib)
 
@@ -24,6 +25,7 @@ set(TEST_SOURCES
         block_queue_test.cpp
         log_test.cpp
         conn_pool_test.cpp
+        buffer_test.cpp
 )
 
 # 循环为每个测试文件创建独立的目标和测试
@@ -42,6 +44,7 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
             pthread
             LogLib
             SqlLib
+            BuflLib
             mysqlclient # 链接 MySQL 客户端库
     )
 
