@@ -55,7 +55,15 @@ void Buffer::Retrieve(size_t len) {
     readPos_ += len;
 
 }
+const char* Buffer::BeginWriteConst() const {
+    return BeginPtr_() + writePos_;
+}
 
+//更新读指针位置
+void Buffer::RetrieveUntil(const char *end) {
+    assert(Peek() <= end );
+    Retrieve(end - Peek());
+}
 void Buffer::RetrieveAll() {
     memset(&buffer_[0], 0, buffer_.size());  //清空缓存区
     readPos_ = 0;

@@ -51,6 +51,8 @@ public:
     //讲缓存区的数据转换为字符串并清空
     std::string RetrieveAllToStr();
 
+    void RetrieveUntil(const char* end);
+
     //写入数据到缓存区
     void Append(const std::string& str);
     void Append(const char* data, size_t len);
@@ -61,12 +63,14 @@ public:
 
     //从缓存区读数据写到文件描述符
     ssize_t WriteFd(int fd, int* Errno);
-private:
 
     //返回一个指向缓冲区当前写入位置的指针
     char* BeginWrite();
 
-    const char* BeginWriteConst();
+    const char* BeginWriteConst() const;
+private:
+
+
 
     //返回一个指向缓冲区起始位置的指针
     char* BeginPtr_();
