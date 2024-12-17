@@ -13,10 +13,13 @@ add_library(LogLib STATIC ${CMAKE_SOURCE_DIR}/src/Log/log.cpp)
 add_library(SqlLib STATIC ${CMAKE_SOURCE_DIR}/src/mysqlPool/sql_connection_pool.cpp)
 add_library(BuflLib STATIC ${CMAKE_SOURCE_DIR}/src/buffer/buffer.cpp)
 add_library(HttpRequestLib STATIC ${CMAKE_SOURCE_DIR}/src/http/HttpRequest.cpp)
+add_library(HttpResponseLib STATIC ${CMAKE_SOURCE_DIR}/src/http/HttpResponse.cpp)
 # SqlLib 依赖 LogLib
 target_link_libraries(SqlLib PUBLIC LogLib)
 
 target_link_libraries(HttpRequestLib PUBLIC LogLib BuflLib SqlLib)
+
+target_link_libraries(HttpResponseLib PUBLIC LogLib BuflLib)
 # 添加 MySQL 的头文件和库路径
 include_directories(/usr/local/mysql/include) # 替换为 MySQL 头文件路径
 link_directories(/usr/local/mysql/lib)       # 替换为 MySQL 库文件路径
@@ -29,6 +32,7 @@ set(TEST_SOURCES
         conn_pool_test.cpp
         buffer_test.cpp
         http_request_test.cpp
+        http_response_test.cpp
 )
 
 # 循环为每个测试文件创建独立的目标和测试
@@ -49,6 +53,7 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
             SqlLib
             BuflLib
             HttpRequestLib
+            HttpResponseLib
             mysqlclient # 链接 MySQL 客户端库
     )
 

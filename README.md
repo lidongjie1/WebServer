@@ -85,6 +85,9 @@
       2. ET模式
          1. socket的接收缓冲区状态变化时触发读事件，即空的接收缓冲区刚接收到数据时触发读事件（从无到有）
          2. socket的发送缓冲区状态变化时触发写事件，即满的缓冲区刚空出空间时触发读事件（从有到无）
+   5. http_conn模块的readbuffer、writebuffer
+      1. readbuffer : 用于从客户端读取 HTTP 请求数据(buffer设计动态管理readpos、writepos)
+      2. writebuffer: 用于存放从 HTTP 响应生成的数据(buffer设计动态管理readpos、writepos)
 3. 开发流程
    1. http请求模块
       1. parse解析函数、解析请求行、解析请求头、解析请求体
@@ -94,7 +97,12 @@
          1. 编码要求转换（根据当前采用的post编码格式）
          2. 核验数据库信息（利用数据库连接池创建数据库实例，查询、插入数据）
    2. http响应模块
+      1. 文件路径、状态采用filesystem进行处理（需要满足c++17版本）
+      2. 状态码映射、文件后缀映射
+      3. 添加状态行、头部字段、内容（这里要将创建的映射空间首地址给出）
+      4. 
    3. http连接处理模块
+      1. atomic可以保证对共享数据的访问是线程安全的(针对userCount_、close变量)
 4. 测试功能（google test）
    1. 测试http请求模块各个功能
    2. 测试http响应模块各个功能

@@ -125,10 +125,11 @@ bool HttpRequest::UserVerify(const std::string &name, const std::string &pwd, bo
         return false;
     }
     LOG_INFO("Verifying name: %s, pwd: [HIDDEN]", name.c_str());
-
+    //这是用于测试的时候初始化数据库
+    //ConnectionPool::getInstance()->init("192.168.65.128", "root", "web123!@#", "tiny_webserver", 3306, 10, 0);
     MYSQL* sql;
     //获取数据库实例
-    ConnectionRAII(&sql,ConnectionPool::getInstance());
+    ConnectionRAII connection_Ral(&sql,ConnectionPool::getInstance());
     assert(sql);
 
     //登录成功标志
@@ -182,7 +183,6 @@ bool HttpRequest::UserVerify(const std::string &name, const std::string &pwd, bo
         }
     }
     mysql_free_result(res);
-    //TODO 这里的释放数据库不知道有无bug,只是单纯的清除连接数
     ConnectionPool::getInstance()->getFreeConn();
     if (success) {
         LOG_INFO("User verification succeeded for user: %s", name.c_str());
