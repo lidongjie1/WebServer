@@ -103,6 +103,7 @@
       4. 
    3. http连接处理模块
       1. atomic可以保证对共享数据的访问是线程安全的(针对userCount_、close变量)
+      2. read、write、process三个函数的实现，read用于从socket文件描述符读取客户端请求数据，write将响应数据写到缓冲区，process是处理流程
 4. 测试功能（google test）
    1. 测试http请求模块各个功能
    2. 测试http响应模块各个功能

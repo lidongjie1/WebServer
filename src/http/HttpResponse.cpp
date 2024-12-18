@@ -87,10 +87,10 @@ void HttpResponse::MakeResponse(Buffer &buffer) {
         // 检查文件是否存在以及是否为目录
         std::filesystem::path fullPath = std::filesystem::path(src_dir_) / path_;
         mmFileStat_ = std::filesystem::status(fullPath);  // 更新状态信息
-        if(!std::filesystem::exists(fullPath) || std::filesystem::is_directory(fullPath)){
+        if(!std::filesystem::exists(fullPath) || std::filesystem::is_directory(fullPath)) {
             code_ = 404; //未找到
-        }else if(!((std::filesystem::status(fullPath).permissions() & std::filesystem::perms::others_read) == std::filesystem::perms::none)) {
-            code_ = 403; //判断文件是否具有可读权限
+        }else if ((std::filesystem::status(fullPath).permissions() & std::filesystem::perms::others_read) == std::filesystem::perms::none) {
+                code_ = 403; // 文件没有读取权限
         }else if(code_ == -1)
         {
             code_ = 200;//成功访问
@@ -98,6 +98,11 @@ void HttpResponse::MakeResponse(Buffer &buffer) {
     }catch (const std::exception& e){
         LOG_ERROR("Exception while processing response: %s", e.what());
     }
+    //把内容加入到缓存区
+    ErrorHtml();
+    AddStateLine_(buffer);
+    AddHeader_(buffer);
+    AddContent_(buffer);
 }
 
 
@@ -144,6 +149,7 @@ void HttpResponse::AddHeader_(Buffer &buffer) {
 void HttpResponse::AddContent_(Buffer &buffer) {
     //文件路径
     std::filesystem::path fullPath = std::filesystem::path(src_dir_) / path_;
+    //这里只判断文件是否存在
     if(!std::filesystem::exists(fullPath)){
         ErrorContent(buffer,"File NotFound!");
         return;
@@ -166,6 +172,12 @@ void HttpResponse::AddContent_(Buffer &buffer) {
         //指定映射
         mmFile_.reset(mmRet);
         close(src_fd);//映射成功关闭文件描述符
+
+        // TODO 将映射内容加入到响应内容中（TinyWebserver原项目并未把读到内容加入到buffer）
+        // TODO 测试要求（暂时将内容追加到buffer）
+        // TODO 添加这个会报释放空指针错误
+        buffer.Append(mmRet,filesize);
+
         buffer.Append("Content-length: " + to_string(filesize) + "\r\n\r\n");  // 添加内容长度头
     }catch (const std::exception& e){
         LOG_ERROR("Exception while adding content: %s", e.what());  // 打印错误日志
