@@ -69,7 +69,7 @@ TEST_F(HttpResponseTest, HandleForbiddenFile) {
 TEST_F(HttpResponseTest, ErrorHtmlPage) {
     HttpResponse response;
     Buffer buffer;
-    response.Init(test_dir_.string(), "nonexistent.html", true, 404);
+    response.Init(test_dir_.string(), "nonexistent.html", true, -1);
     response.ErrorHtml();
     response.MakeResponse(buffer);
 

@@ -72,7 +72,7 @@ private:
     bool isKeepAlive_;
     std::string path_;
     std::string src_dir_;
-    std::unique_ptr<char[]> mmFile_; // 使用智能指针管理的文件映射内存
+    char* mmFile_; // 使用智能指针管理的文件映射内存
     std::filesystem::file_status mmFileStat_; //文件状态信息
 
     // 文件后缀 -> 文件类型映射

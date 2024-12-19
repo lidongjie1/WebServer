@@ -33,9 +33,9 @@ const unordered_map<string, string> HttpResponse::SUFFIX_TYPE = {
 };
 
 const unordered_map<int, string> HttpResponse::CODE_PATH = {
-        { 400, "/400.html" },
-        { 403, "/403.html" },
-        { 404, "/404.html" },
+        { 400, "400.html" },
+        { 403, "403.html" },
+        { 404, "404.html" },
 };
 
 const unordered_map<int, string> HttpResponse::CODE_STATUS = {
@@ -58,8 +58,8 @@ HttpResponse::~HttpResponse() {
 void HttpResponse::UnmapFile() {
     if (mmFile_) {
         auto fileSize = std::filesystem::file_size(std::filesystem::path(src_dir_) / path_);
-        munmap(mmFile_.get(), fileSize);
-        mmFile_.reset();
+        munmap(mmFile_, fileSize);
+        mmFile_ = nullptr;
     }
 }
 
@@ -77,7 +77,7 @@ void HttpResponse::Init(const std::string &src_dir, const std::string &path, boo
     isKeepAlive_ = isKeepAlive;
     path_ = path;
     src_dir_ = src_dir;
-    mmFile_.reset();
+    mmFile_= nullptr;
     mmFileStat_ = std::filesystem::file_status{}; // Reset file status
 }
 
@@ -108,12 +108,15 @@ void HttpResponse::MakeResponse(Buffer &buffer) {
 
 // 获取文件内容指针
 char *HttpResponse::File() {
-    return mmFile_.get();
+    return mmFile_;
 }
 
-// 获取文件大小
 size_t HttpResponse::FileLen() const {
-    return std::filesystem::file_size(std::filesystem::path(src_dir_) / path_);
+    auto fullPath = std::filesystem::path(src_dir_) / path_;
+    if (std::filesystem::exists(fullPath)) {
+        return std::filesystem::file_size(fullPath);
+    }
+    return 0;  // 文件不存在，返回大小为 0
 }
 
 //错误页面内容
@@ -161,16 +164,15 @@ void HttpResponse::AddContent_(Buffer &buffer) {
         }
         auto filesize = std::filesystem::file_size(fullPath);
         //这里不用指针是因为映射是一块连续的内存，指针只会释放指针的内存空间
-        mmFile_ = std::make_unique<char[]>(filesize);//分配内存用于映射
         //映射区只读，私有映射，修改不会反射到原始文件
-        auto* mmRet = static_cast<char*>(mmap(0,filesize,PROT_READ,MAP_PRIVATE,src_fd,0));
-        if(mmRet == MAP_FAILED){
-            ErrorContent(buffer,"File Mapping Failed");
+        auto* mmRet = static_cast<char*>(mmap(0, filesize, PROT_READ, MAP_PRIVATE, src_fd, 0));
+        if (mmRet == MAP_FAILED) {
+            ErrorContent(buffer, "File Mapping Failed");
             close(src_fd);
             return;
         }
+        mmFile_ = mmRet;  // 保存映射指针到裸指针
         //指定映射
-        mmFile_.reset(mmRet);
         close(src_fd);//映射成功关闭文件描述符
 
         // TODO 将映射内容加入到响应内容中（TinyWebserver原项目并未把读到内容加入到buffer）
