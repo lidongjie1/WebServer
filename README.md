@@ -107,6 +107,9 @@
 4. 测试功能（google test）
    1. 测试http请求模块各个功能
    2. 测试http响应模块各个功能
+      1. **内存映射bug**:使用std::unique_ptr<char[]>管理mmap返回的指针时候，出现内存泄露问题
+         1. 因为std::unique_ptr<char[]>在析构的时候尝试用delete[]释放，而 mmap 的内存应该通过 munmap 释放
+         2. 直接采用裸指针char*管理mmap返回的指针，在析构的时候调用munmap释放映射内存
    3. 测试http连接处理模块功能
 
 #### 定时器模块
