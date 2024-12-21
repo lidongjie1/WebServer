@@ -10,7 +10,6 @@
 #include <functional>
 #include <cassert>
 
-
 using TimeoutCallBack = std::function<void()>;//超时回调函数
 using Clock = std::chrono::high_resolution_clock; //定义高分辨时钟别名
 using MS = std::chrono::milliseconds; //毫秒
@@ -24,15 +23,15 @@ struct TimerNode{
 
     //小根堆比较运算符，过期时间早的优先级更高
     bool operator < (const TimerNode& other) const{
-        return expires > other.expires;
+        return expires < other.expires;
     }
 };
 
 class HeapTimer{
 public:
-    HeapTimer();
+    HeapTimer() = default;
 
-    ~HeapTimer();
+    ~HeapTimer() = default;
 
     void adjust(int id, int newExpires); //调整定时器时间
 

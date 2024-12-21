@@ -5,14 +5,6 @@
 #include "../include/timer/heaptimer.h"
 
 
-HeapTimer::HeapTimer() {
-
-}
-
-HeapTimer::~HeapTimer() {
-    clear();
-}
-
 //调整节点
 void HeapTimer::adjust(int id, int newExpires) {
     assert(ref_.count(id)>0);
@@ -48,7 +40,7 @@ void HeapTimer::do_work(int id) {
     if(ref_.count(id) == 0) return;
     size_t index = ref_[id];
     TimerNode node = heap_[index];
-    node.timeoutCallBack;
+    node.timeoutCallBack();
     del_(index);//删除该定时器节点
 }
 
@@ -80,7 +72,7 @@ void HeapTimer::tick() {
     while (!heap_.empty()){
         TimerNode& node = heap_.front();    //获取堆顶元素
         if(now < node.expires) break;//堆顶元素未超时
-        node.timeoutCallBack;
+        node.timeoutCallBack();
         pop();//删除堆顶元素
     }
 }
@@ -96,7 +88,7 @@ int HeapTimer::get_next_tick() {
 void HeapTimer::sift_up_(size_t index) {
     while (index > 0){
         size_t parent = (index - 1) / 2;
-        if(!(heap_[index]<heap_[parent])) break;
+        if(heap_[parent]<heap_[index]) break;
         swap_nodes_(index,parent);
         index = parent;
     }
@@ -124,4 +116,9 @@ void HeapTimer::swap_nodes_(size_t i, size_t j) {
     //交换节点后，更新此时的节点映射
     ref_[heap_[i].id] = i;
     ref_[heap_[j].id] = j;
+}
+
+void HeapTimer::clear() {
+    heap_.clear();  // 清空堆
+    ref_.clear();  // 清空映射表
 }
