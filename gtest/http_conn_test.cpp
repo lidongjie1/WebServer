@@ -66,7 +66,7 @@ TEST_F(HttpConnTest, GetIpAndPort) {
 
 TEST_F(HttpConnTest, Read) {
     // 模拟写入数据到客户端 socket
-    const char* testData = "POST /test HTTP/1.1\r\nHost: localhost\r\n\r\n";
+    const char* testData = "POST /test.html HTTP/1.1\r\nHost: localhost\r\n\r\n";
     ssize_t sentBytes = send(clientFd, testData, strlen(testData), 0);
     ASSERT_GT(sentBytes, 0);
 

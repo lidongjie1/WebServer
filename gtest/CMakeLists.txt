@@ -15,6 +15,7 @@ add_library(BuflLib STATIC ${CMAKE_SOURCE_DIR}/src/buffer/buffer.cpp)
 add_library(HttpRequestLib STATIC ${CMAKE_SOURCE_DIR}/src/http/HttpRequest.cpp)
 add_library(HttpResponseLib STATIC ${CMAKE_SOURCE_DIR}/src/http/HttpResponse.cpp)
 add_library(HttpConnLib STATIC ${CMAKE_SOURCE_DIR}/src/http/http_conn.cpp)
+add_library(TimerLib STATIC ${CMAKE_SOURCE_DIR}/src/timer/heaptimer.cpp)
 # SqlLib 依赖 LogLib
 target_link_libraries(SqlLib PUBLIC LogLib mysqlclient)
 
@@ -37,6 +38,7 @@ set(TEST_SOURCES
         http_request_test.cpp
         http_response_test.cpp
         http_conn_test.cpp
+        timer_test.cpp
 )
 
 # 循环为每个测试文件创建独立的目标和测试
@@ -59,6 +61,7 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
             HttpRequestLib
             HttpResponseLib
             HttpConnLib
+            TimerLib
             mysqlclient # 链接 MySQL 客户端库
 
     )
